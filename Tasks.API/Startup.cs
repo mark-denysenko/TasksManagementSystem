@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Tasks.API.Application;
+using Tasks.API.Application.Implementations;
 using Tasks.Domain.TestAggregate;
 using Tasks.Infrastructure;
 
@@ -33,6 +35,7 @@ namespace Tasks.API
                 => options.UseSqlServer(Configuration.GetConnectionString("Context")));
 
             services.AddScoped<ITaskRepository, TaskRepository>();
+            services.AddScoped<ITaskService, TaskService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -5,18 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Application\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Tasks.Domain\Tasks.Domain.csproj" />
     <ProjectReference Include="..\Tasks.Infrastructure\Tasks.Infrastructure.csproj" />
   </ItemGroup>
