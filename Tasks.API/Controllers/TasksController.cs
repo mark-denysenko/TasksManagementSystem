@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tasks.API.Application;
 using Tasks.API.DTO;
 using Tasks.Domain.TestAggregate;
-using Tasks.Infrastructure;
 
 namespace Tasks.API.Controllers
 {
@@ -48,24 +44,24 @@ namespace Tasks.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTaskAsync(long id, TaskModel taskEntity)
+        public async Task<IActionResult> PutTaskAsync(long id, TaskModel task)
         {
-            if (id != taskEntity.Id)
+            if (id != task.Id)
             {
                 return BadRequest();
             }
 
-            await taskService.UpdateTaskAsync(taskEntity);
+            await taskService.UpdateTaskAsync(task);
 
             return NoContent();
         }
 
         [HttpPost]
-        public async Task<ActionResult<TaskEntity>> PostTaskAsync(TaskModel taskEntity)
+        public async Task<ActionResult<TaskEntity>> PostTaskAsync(TaskModel task)
         {
-            var task = await taskService.CreateTaskAsync(taskEntity);
+            var taskModel = await taskService.CreateTaskAsync(task);
 
-            return CreatedAtAction("GetTaskAsync", new { id = task.Id });
+            return CreatedAtAction("GetTaskAsync", new { id = taskModel.Id });
         }
 
         [HttpDelete("{id}")]

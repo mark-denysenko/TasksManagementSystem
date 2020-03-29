@@ -14,8 +14,8 @@ namespace Tasks.Infrastructure
 
             builder.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
             builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
-            builder.Property(x => x.Description).IsRequired().HasMaxLength(1000);
-            builder.Property(x => x.TaskStatus).IsRequired().HasDefaultValueSql(((int)TaskStatus.Planned).ToString());
+            builder.Property(x => x.Description).IsRequired().HasMaxLength(1000).HasDefaultValue("");
+            builder.Property(x => x.TaskStatus).IsRequired().HasDefaultValue(TaskStatus.Planned);
             builder.Property(x => x.StartDate).IsRequired().HasDefaultValueSql("GETUTCDATE()");
             builder.Property(x => x.FinishDate).IsRequired().HasDefaultValueSql("GETUTCDATE()");
 

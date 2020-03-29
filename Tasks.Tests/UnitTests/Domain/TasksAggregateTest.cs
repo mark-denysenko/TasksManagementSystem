@@ -60,5 +60,48 @@ namespace Tasks.Tests.UnitTests.Domain
 
             Assert.Catch<TaskException>(() => task.ChangeFinishDate(newStartDate), "FinishDate did not throw the exception");
         }
+
+        [Test]
+        public void Check_TaskStatus_All_subtasks_completed()
+        {
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.Completed).Build());
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.Completed).Build());
+
+            var result = task.TaskStatus;
+
+            Assert.AreEqual(TaskStatus.Completed, result);
+        }
+
+        [Test]
+        public void Check_TaskStatus_Any_subtask_inProgress()
+        {
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.Completed).Build());
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.InProgress).Build());
+
+            var result = task.TaskStatus;
+
+            Assert.AreEqual(TaskStatus.InProgress, result);
+        }
+
+        [Test]
+        public void Check_TaskStatus_No_subtask_inProgress_and_any_planned_and_any_completed()
+        {
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.Completed).Build());
+            task.AddSubTask(new TaskEntityBuilder().WithStatus(TaskStatus.Planned).Build());
+
+            var result = task.TaskStatus;
+
+            Assert.AreEqual(TaskStatus.Planned, result);
+        }
+
+        [TestCase(TaskStatus.Planned)]
+        [TestCase(TaskStatus.InProgress)]
+        [TestCase(TaskStatus.Completed)]
+        public void Check_TaskStatus_no_subtasks(TaskStatus taskStatus)
+        {
+            task.ChangeStatus(taskStatus);
+
+            Assert.AreEqual(taskStatus, task.TaskStatus, "Tasks status incorrect");
+        }
     }
 }

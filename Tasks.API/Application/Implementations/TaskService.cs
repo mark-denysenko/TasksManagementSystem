@@ -29,6 +29,18 @@ namespace Tasks.API.Application.Implementations
 
         public async Task DeleteTaskAsync(long id)
         {
+            var task = await taskRepository.GetAsync(id);
+
+            if (task is null)
+            {
+                return;
+            }
+
+            foreach(var subtask in task.SubTasks)
+            {
+                taskRepository.DeleteTask(subtask.Id);
+            }
+
             taskRepository.DeleteTask(id);
             await taskRepository.UnitOfWork.SaveChangesAsync();
         }
