@@ -18,6 +18,9 @@ namespace Tasks.Infrastructure
             builder.Property(x => x.TaskStatus).IsRequired().HasDefaultValueSql(((int)TaskStatus.Planned).ToString());
             builder.Property(x => x.StartDate).IsRequired().HasDefaultValueSql("GETUTCDATE()");
             builder.Property(x => x.FinishDate).IsRequired().HasDefaultValueSql("GETUTCDATE()");
+
+            builder.HasMany(x => x.SubTasks).WithOne(x => x.ParentTask).OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }
