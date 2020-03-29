@@ -39,26 +39,52 @@ namespace Tasks.API.Application.Implementations
             return ToTaskModel(task);
         }
 
-        public async Task<IEnumerable<TaskModel>> GetTasksAsync()
+        public async Task<IEnumerable<TaskModel>> GetTasksAsync(TaskFilter filter = null)
         {
             var tasks = await taskRepository.GetAsync();
+
+            if (filter != null)
+            {
+                tasks = tasks.Where(t => t.StartDate > filter.StartDate && t.FinishDate < filter.FinishDate);
+            }
 
             return tasks.Select(ToTaskModel);
         }
 
-        public Task<TaskModel> UpdateTaskAsync(TaskModel task)
+        public async Task<TaskModel> UpdateTaskAsync(TaskModel task)
         {
-            throw new NotImplementedException();
+            var taskEntity = ToDomainEntity(task);
+            taskRepository.Update(taskEntity);
+            await taskRepository.UnitOfWork.SaveChangesAsync();
+
+            return ToTaskModel(taskEntity);
         }
 
         private TaskEntity ToDomainEntity(TaskModel task)
         {
-            return new TaskEntity();
+            return new TaskEntity(
+                task.Id, 
+                task.Name, 
+                task.Description, 
+                task.StartDate, 
+                task.FinishDate, 
+                task.TaskStatus,
+                task.SubTasks?.Select(ToDomainEntity));
         }
 
         private TaskModel ToTaskModel(TaskEntity task)
         {
-            return new TaskModel();
+            return new TaskModel
+            {
+                Id = task.Id,
+                Name = task.Name,
+                Description = task.Description,
+                StartDate = task.StartDate,
+                FinishDate = task.FinishDate,
+                TaskStatus = task.TaskStatus,
+                ParentTaskId = task.ParentTask?.Id,
+                SubTasks = task.SubTasks.Select(ToTaskModel)
+            };
         }
     }
 }

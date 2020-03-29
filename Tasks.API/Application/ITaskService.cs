@@ -8,7 +8,7 @@ namespace Tasks.API.Application
 {
     public interface ITaskService
     {
-        Task<IEnumerable<TaskModel>> GetTasksAsync();
+        Task<IEnumerable<TaskModel>> GetTasksAsync(TaskFilter filter = null);
         Task<TaskModel> GetTaskAsync(long id);
         Task<TaskModel> CreateTaskAsync(TaskModel task);
         Task<TaskModel> UpdateTaskAsync(TaskModel task);

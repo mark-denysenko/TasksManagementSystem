@@ -36,6 +36,7 @@ namespace Tasks.API
 
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<ITaskService, TaskService>();
+            services.AddScoped<ITaskReporter, CsvTaskReporter>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
