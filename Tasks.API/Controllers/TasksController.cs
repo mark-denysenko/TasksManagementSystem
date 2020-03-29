@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Tasks.API.Application;
+using Tasks.API.DTO;
 using Tasks.Domain.TestAggregate;
 using Tasks.Infrastructure;
 
@@ -14,23 +17,26 @@ namespace Tasks.API.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
-        private readonly TasksContext _context;
+        private readonly ILogger<TasksController> logger;
+        private readonly ITaskService taskService;
+        private readonly ITaskReporter taskReporter;
 
-        public TasksController(TasksContext context)
+        public TasksController(ILogger<TasksController> logger, ITaskService taskService, ITaskReporter taskReporter)
         {
-            _context = context;
+            this.logger = logger;
+            this.taskService = taskService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaskEntity>>> GetTasks()
+        public async Task<IEnumerable<TaskModel>> GetTasksAsync()
         {
-            return await _context.Tasks.ToListAsync();
+            return await taskService.GetTasksAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<TaskEntity>> GetTaskEntity(long id)
+        public async Task<ActionResult<TaskModel>> GetTaskAsync(long id)
         {
-            var taskEntity = await _context.Tasks.FindAsync(id);
+            var taskEntity = await taskService.GetTaskAsync(id);
 
             if (taskEntity == null)
             {
@@ -41,67 +47,44 @@ namespace Tasks.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTaskEntity(long id, TaskEntity taskEntity)
+        public async Task<IActionResult> PutTaskAsync(long id, TaskModel taskEntity)
         {
             if (id != taskEntity.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(taskEntity).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TaskEntityExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await taskService.UpdateTaskAsync(taskEntity);
 
             return NoContent();
         }
 
         [HttpPost]
-        public async Task<ActionResult<TaskEntity>> PostTaskEntity(TaskEntity taskEntity)
+        public async Task<ActionResult<TaskEntity>> PostTaskAsync(TaskModel taskEntity)
         {
-            _context.Tasks.Add(taskEntity);
-            await _context.SaveChangesAsync();
+            var task = await taskService.CreateTaskAsync(taskEntity);
 
-            return CreatedAtAction("GetTaskEntity", new { id = taskEntity.Id }, taskEntity);
+            return CreatedAtAction("GetTaskAsync", new { id = task.Id });
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<TaskEntity>> DeleteTaskEntity(long id)
+        public async Task<ActionResult<TaskModel>> DeleteTaskAsync(long id)
         {
-            var taskEntity = await _context.Tasks.FindAsync(id);
+            var taskEntity = await taskService.GetTaskAsync(id);
             if (taskEntity == null)
             {
                 return NotFound();
             }
 
-            _context.Tasks.Remove(taskEntity);
-            await _context.SaveChangesAsync();
+            await taskService.DeleteTaskAsync(id);
 
             return taskEntity;
         }
 
         [HttpGet("Csv")]
-        public FileResult GetCsvReport(DateTime startDate, DateTime endDate)
+        public async Task<FileResult> GetCsvReportAsync(DateTime startDate, DateTime endDate)
         {
-            return File(new byte[0], "text/csv", "tasks.csv");
-        }
-
-        private bool TaskEntityExists(long id)
-        {
-            return _context.Tasks.Any(e => e.Id == id);
+            return File(await taskReporter.GetReportAsync(null), "text/csv", "tasks.csv");
         }
     }
 }

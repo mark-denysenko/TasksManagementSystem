@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Tasks.Domain.Exceptions;
 
@@ -12,14 +13,38 @@ namespace Tasks.Domain.TestAggregate
         public string Description { get; private set; }
         public DateTime StartDate { get; private set; }
         public DateTime FinishDate { get; private set; }
-        public TaskStatus TaskStatus { get; private set; }
         public TaskEntity ParentTask { get; private set; }
+        public TaskStatus TaskStatus 
+        { 
+            private set => taskStatus = value;
+            get
+            {
+                if (!SubTasks.Any())
+                {
+                    return taskStatus;
+                }
 
+                if (SubTasks.All(t => t.TaskStatus == TaskStatus.Completed))
+                {
+                    return TaskStatus.Completed;
+                }
+                else if (SubTasks.Any(t => t.TaskStatus == TaskStatus.InProgress))
+                {
+                    return TaskStatus.InProgress;
+                }
+                else
+                {
+                    return TaskStatus.Planned;
+                }
+            }
+        }
+
+        private TaskStatus taskStatus;
         private readonly List<TaskEntity> subTasks = new List<TaskEntity>();
 
         public IReadOnlyCollection<TaskEntity> SubTasks => subTasks;
 
-        protected TaskEntity(
+        public TaskEntity(
             long id,
             string name,
             string description,
@@ -39,7 +64,12 @@ namespace Tasks.Domain.TestAggregate
 
         public void ChangeName(string newName)
         {
-            Name = newName;
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                throw new TaskException("Name can not be empty");
+            }
+
+            Name = newName.Trim();
         }
 
         public void ChangeDescription(string newDescription)
@@ -47,7 +77,7 @@ namespace Tasks.Domain.TestAggregate
             Description = newDescription;
         }
 
-        public void ChangeState(TaskStatus newState)
+        public void ChangeStatus(TaskStatus newState)
         {
             TaskStatus = newState;
         }
@@ -61,6 +91,7 @@ namespace Tasks.Domain.TestAggregate
 
             StartDate = newStartDate;
         }
+
         public void ChangeFinishDate(DateTime newFinishDate)
         {
             if (newFinishDate < StartDate)
@@ -69,6 +100,21 @@ namespace Tasks.Domain.TestAggregate
             }
 
             FinishDate = newFinishDate;
+        }
+
+        public void AddSubTask(TaskEntity subTask)
+        {
+            if (subTask is null)
+            {
+                throw new TaskException("Subtask was not provided");
+            }
+
+            subTasks.Add(subTask);
+        }
+
+        public void ChangeParentTask(TaskEntity parentTask)
+        {
+            ParentTask = parentTask;
         }
     }
 }
