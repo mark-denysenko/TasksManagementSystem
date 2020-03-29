@@ -25,6 +25,7 @@ namespace Tasks.API.Controllers
         {
             this.logger = logger;
             this.taskService = taskService;
+            this.taskReporter = taskReporter;
         }
 
         [HttpGet]
@@ -81,10 +82,18 @@ namespace Tasks.API.Controllers
             return taskEntity;
         }
 
-        [HttpGet("Csv")]
-        public async Task<FileResult> GetCsvReportAsync(DateTime startDate, DateTime endDate)
+        [HttpGet("Csv/{startDate}/{finishDate}")]
+        public async Task<FileResult> GetCsvReportAsync(DateTime startDate, DateTime finishDate)
         {
-            return File(await taskReporter.GetReportAsync(null), "text/csv", "tasks.csv");
+            var reportTasks = await taskService.GetTasksAsync(new TaskFilter 
+            { 
+                StartDate = startDate, 
+                FinishDate = finishDate 
+            }); 
+
+            var report = await taskReporter.GetReportAsync(reportTasks);
+
+            return File(report, "text/csv", "tasks.csv");
         }
     }
 }

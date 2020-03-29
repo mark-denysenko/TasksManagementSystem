@@ -58,6 +58,7 @@ namespace Tasks.Infrastructure
         {
             return await _context
                                 .Tasks
+                                .Where(t => t.ParentTask == null)
                                 .Include(x => x.SubTasks)
                                 .Include(x => x.ParentTask)
                                 .ToListAsync();

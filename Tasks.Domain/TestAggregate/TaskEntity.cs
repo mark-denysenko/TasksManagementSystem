@@ -50,6 +50,22 @@ namespace Tasks.Domain.TestAggregate
             string description,
             DateTime startDate,
             DateTime finishDate,
+            TaskStatus taskState,
+            IEnumerable<TaskEntity> subTasks)
+            : this(id, name, description, startDate, finishDate, taskState)
+        {
+            if (subTasks != null)
+            {
+                this.subTasks = new List<TaskEntity>(subTasks);
+            }
+        }
+
+        public TaskEntity(
+            long id,
+            string name,
+            string description,
+            DateTime startDate,
+            DateTime finishDate,
             TaskStatus taskState)
         {
             Id = id;
@@ -104,6 +120,11 @@ namespace Tasks.Domain.TestAggregate
 
         public void AddSubTask(TaskEntity subTask)
         {
+            if (ParentTask != null)
+            {
+                throw new TaskException("Subtask can not have subtasks");
+            }
+
             if (subTask is null)
             {
                 throw new TaskException("Subtask was not provided");
@@ -114,6 +135,11 @@ namespace Tasks.Domain.TestAggregate
 
         public void ChangeParentTask(TaskEntity parentTask)
         {
+            if (subTasks.Any() && parentTask != null)
+            {
+                throw new TaskException("Task with subtasks cannot be switched to subtask");
+            }
+
             ParentTask = parentTask;
         }
     }
